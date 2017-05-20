@@ -1,2 +1,4 @@
+__pycache__
+.vscode
 passwords.py
 *.csv
