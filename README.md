@@ -15,6 +15,12 @@ git clone https://github.com/mblandfo/python_twitter_utils.git
 ```
 
 Open Visual Studio Code, open directory c:\dev\python-twitter-utils  
+If it asks you to install the python extension say yes  
+Go to File -> Preferences -> Settings and on the right side add this line:  
+```
+"python.linting.enabled": false
+```  
+If you want to change your theme go to File -> Preferences -> Color Theme  
 Go to View -> Integrated Terminal and run these commands:  
 
 ```
