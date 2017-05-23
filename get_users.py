@@ -63,7 +63,7 @@ with open(tweetsOutputFileName, 'w', newline='') as csvfile:
     csvWriter.writerow(["screen_name", "tweet_id", "created_at", "text"])
     for user in usersLoaded:        
         for tweet in user.tweets:
-            row = [user.screen_name, tweet.id, tweet.created_at, tweet.text]
+            row = [user.screen_name, tweet.id, tweet.created_at, tweet.full_text or tweet.text]
             csvWriter.writerow(row)
 
 print("Done!")
