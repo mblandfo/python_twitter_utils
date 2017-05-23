@@ -10,7 +10,8 @@ api = twitter.Api(consumer_key=config["consumer_key"],
                 consumer_secret=config["consumer_secret"],
                 access_token_key=config["access_token_key"],
                 access_token_secret=config["access_token_secret"],
-                sleep_on_rate_limit=True)
+                sleep_on_rate_limit=True,
+                tweet_mode="extended")
 
 inputFileName = "input.csv"
 userOutputFileName = "usersOutput.csv"
