@@ -51,14 +51,14 @@ for screen_name in screen_names:
     usersLoaded.append(user)
 
 
-with open(userOutputFileName, 'w', newline='') as csvfile:
+with open(userOutputFileName, 'w', newline='', encoding='utf-8') as csvfile:
     csvWriter = csv.writer(csvfile)
     csvWriter.writerow(["screen_name", "followers_count"])
     for user in usersLoaded:
         row = [user.screen_name, user.followers_count]
         csvWriter.writerow(row)
 
-with open(tweetsOutputFileName, 'w', newline='') as csvfile:
+with open(tweetsOutputFileName, 'w', newline='', encoding='utf-8') as csvfile:
     csvWriter = csv.writer(csvfile)
     csvWriter.writerow(["screen_name", "tweet_id", "created_at", "text"])
     for user in usersLoaded:        
