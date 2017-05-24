@@ -92,6 +92,10 @@ for screen_name in screen_names:
     user.tweets.sort(key = lambda x: x.created_at_date, reverse=True)
     usersLoaded.append(user)
 
+def printDate(date):
+    date_in_tz = date.astimezone(timezone)
+    return datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+
 with open(userOutputFileName, 'w', newline='', encoding='utf-8') as csvfile:
     csvWriter = csv.writer(csvfile)
     csvWriter.writerow(["screen_name", "followers_count"])
@@ -104,7 +108,7 @@ with open(tweetsOutputFileName, 'w', newline='', encoding='utf-8') as csvfile:
     csvWriter.writerow(["screen_name", "tweet_id", "created_at", "text"])
     for user in usersLoaded:        
         for tweet in user.tweets:
-            row = [user.screen_name, tweet.id, tweet.created_at_date.isoformat(), tweet.full_text or tweet.text]
+            row = [user.screen_name, tweet.id, printDate(tweet.created_at_date), tweet.full_text or tweet.text]
             csvWriter.writerow(row)
 
 print("Done!")
