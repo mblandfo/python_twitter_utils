@@ -29,6 +29,7 @@ Go to View -> Integrated Terminal and run this:
 
 ```
 pip install python-twitter
+pip install pytz
 ```
 
 In Visual Studio Code, open "get_users.py" and right click and select "Run python file in terminal"  (or you can just type "python get_users.py" in the terminal)
