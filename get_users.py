@@ -57,16 +57,16 @@ def getTweets(screen_name, startDateString, endDateString):
     
     earliestTweet = None
 
-    since_id = None
+    max_id = None
     while(True):
-        newTweets = api.GetUserTimeline(screen_name=screen_name, count=200, since_id=since_id)
+        newTweets = api.GetUserTimeline(screen_name=screen_name, count=200, max_id=max_id)
         if not newTweets:
             return tweets
         for tweet in newTweets:
             tweet.created_at_date = parseTwitterDate(tweet.created_at)
         earliestTweet = min(newTweets, key=lambda x: x.created_at_date)
         tweets += newTweets
-        since_id = earliestTweet.id
+        max_id = earliestTweet.id
         earliestTweetDate = earliestTweet.created_at_date
         if(len(newTweets) < 200 or earliestTweetDate < start):
             return list(filter(lambda x: betweenDates(x.created_at_date, start, end), tweets))
