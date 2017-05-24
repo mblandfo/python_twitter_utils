@@ -18,17 +18,15 @@ api = twitter.Api(consumer_key=config["consumer_key"],
 inputFileName = "input.csv"
 userOutputFileName = "usersOutput.csv"
 tweetsOutputFileName = "tweetsOutput.csv"
-startDateString = "2017-01-01"
-endDateString = "2017-05-18"
+startDateString = "2017-05-01"
+endDateString = "2017-05-18" #endDate is inclusive
 # Note: for a list of timezones, look at pytz.common_timezones
 timezone = pytz.timezone("America/Phoenix")
 
 apiDateFormat = "%Y-%m-%d"
 twitterDateFormat = "%a %b %d %H:%M:%S %z %Y"
 
-# screen_names = ["cityofindpls", "CityofPhoenixAZ"]
 screen_names = []
-
 
 if not os.path.isfile(inputFileName):
     print("Input file not found: " + inputFileName)
@@ -50,8 +48,7 @@ def parseTwitterDate(dateString):
     return datetime.strptime(dateString, twitterDateFormat)
 
 def betweenDates(x, start, end):
-    d = parseTwitterDate(x.created_at)
-    return start <= d and d <= end
+    return start <= x and x <= end
 
 def getTweets(screen_name, startDateString, endDateString):
     tweets = []
@@ -65,12 +62,14 @@ def getTweets(screen_name, startDateString, endDateString):
         newTweets = api.GetUserTimeline(screen_name=screen_name, count=200, since_id=since_id)
         if not newTweets:
             return tweets
-        earliestTweet = min(newTweets, key=lambda x: x.created_at)
+        for tweet in newTweets:
+            tweet.created_at_date = parseTwitterDate(tweet.created_at)
+        earliestTweet = min(newTweets, key=lambda x: x.created_at_date)
         tweets += newTweets
         since_id = earliestTweet.id
-        earliestTweetDate = parseTwitterDate(earliestTweet.created_at)
+        earliestTweetDate = earliestTweet.created_at_date
         if(len(newTweets) < 200 or earliestTweetDate < start):
-            return filter(lambda x: betweenDates(x, start, end), tweets)
+            return list(filter(lambda x: betweenDates(x.created_at_date, start, end), tweets))
 
 for screen_name in screen_names:
     print("Processing screen name: " + screen_name)
@@ -90,6 +89,7 @@ for screen_name in screen_names:
     #user.tweets = api.GetSearch(raw_query=query_string)    
 
     user.tweets = getTweets(screen_name, startDateString, endDateString)
+    user.tweets.sort(key = lambda x: x.created_at_date, reverse=True)
     usersLoaded.append(user)
 
 with open(userOutputFileName, 'w', newline='', encoding='utf-8') as csvfile:
@@ -104,7 +104,7 @@ with open(tweetsOutputFileName, 'w', newline='', encoding='utf-8') as csvfile:
     csvWriter.writerow(["screen_name", "tweet_id", "created_at", "text"])
     for user in usersLoaded:        
         for tweet in user.tweets:
-            row = [user.screen_name, tweet.id, tweet.created_at, tweet.full_text or tweet.text]
+            row = [user.screen_name, tweet.id, tweet.created_at_date.isoformat(), tweet.full_text or tweet.text]
             csvWriter.writerow(row)
 
 print("Done!")
