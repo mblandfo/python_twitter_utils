@@ -42,6 +42,14 @@ with open(inputFileName, 'r') as csvfile:
 
 usersLoaded = []
 
+def printDateOnly(date):
+    date_in_tz = date.astimezone(timezone)
+    return datetime.strftime(date, "%Y-%m-%d")
+
+def printDate(date):
+    date_in_tz = date.astimezone(timezone)
+    return datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+
 def parseDate(dateString):
     d = datetime.strptime(dateString, apiDateFormat)
     return datetime(d.year, d.month, d.day, d.hour, d.minute, d.second, d.microsecond, timezone)
@@ -74,7 +82,8 @@ def getTweets(user, startDateString, endDateString):
         tweets += newTweets
         max_id = earliestTweet.id
         earliestTweetDate = earliestTweet.created_at_date
-        if(len(newTweets) < 200 or earliestTweetDate < start):
+        print(printDateOnly(earliestTweetDate), end=' ', flush=True)
+        if(len(newTweets) == 1 or earliestTweetDate < start):
             return list(filter(lambda x: betweenDates(x.created_at_date, start, end), tweets))
 
 for screen_name in screen_names:
@@ -82,12 +91,9 @@ for screen_name in screen_names:
     user = api.GetUser(screen_name = screen_name)
 
     user.tweets = getTweets(user, startDateString, endDateString)
+    print("\r\nGot tweets: " + str(len(user.tweets)))
     user.tweets.sort(key = lambda x: x.created_at_date, reverse=True)
     usersLoaded.append(user)
-
-def printDate(date):
-    date_in_tz = date.astimezone(timezone)
-    return datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
 
 with open(userOutputFileName, 'w', newline='', encoding='utf-8') as csvfile:
     csvWriter = csv.writer(csvfile)
