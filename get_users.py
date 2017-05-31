@@ -1,5 +1,6 @@
 import twitter
 import load_passwords
+import load_settings
 import csv
 import os.path
 import sys
@@ -7,6 +8,7 @@ import pytz
 from datetime import datetime, timedelta
 
 config = load_passwords.load()
+settings = load_settings.load()
 
 api = twitter.Api(consumer_key=config["consumer_key"],
                 consumer_secret=config["consumer_secret"],
@@ -15,13 +17,13 @@ api = twitter.Api(consumer_key=config["consumer_key"],
                 sleep_on_rate_limit=True,
                 tweet_mode="extended")
 
-inputFileName = "input.csv"
-userOutputFileName = "usersOutput.csv"
-tweetsOutputFileName = "tweetsOutput.csv"
-startDateString = "2017-05-01"
-endDateString = "2017-05-18" #endDate is inclusive
+inputFileName = settings["inputFileName"]
+userOutputFileName = settings["userOutputFileName"]
+tweetsOutputFileName = settings["tweetsOutputFileName"]
+startDateString = settings["startDateString"]
+endDateString = settings["endDateString"]
 # Note: for a list of timezones, look at pytz.common_timezones
-timezone = pytz.timezone("America/Phoenix")
+timezone = pytz.timezone(settings["timezone"])
 
 apiDateFormat = "%Y-%m-%d"
 twitterDateFormat = "%a %b %d %H:%M:%S %z %Y"
@@ -50,14 +52,18 @@ def parseTwitterDate(dateString):
 def betweenDates(x, start, end):
     return start <= x and x <= end
 
-def getTweets(screen_name, startDateString, endDateString):
+# Note: api.GetSearch only gets very recent data, so doing this complicated workaround instead
+def getTweets(user, startDateString, endDateString):
+    screen_name = user.screen_name
     tweets = []
     start = parseDate(startDateString)
     end = parseDate(endDateString) + timedelta(days=1)
     
     earliestTweet = None
-
     max_id = None
+    if hasattr(user, 'status') and user.status is not None:
+        max_id = user.status.id
+
     while(True):
         newTweets = api.GetUserTimeline(screen_name=screen_name, count=200, max_id=max_id)
         if not newTweets:
@@ -75,20 +81,7 @@ for screen_name in screen_names:
     print("Processing screen name: " + screen_name)
     user = api.GetUser(screen_name = screen_name)
 
-
-    # Note: api.GetSearch had problems returning any data, I filed a bug report: https://github.com/bear/python-twitter/issues/478
-
-    # To create a query_string, go here and fill this out:
-    # https://twitter.com/search-advanced
-    # %20 is a space
-    # %40 is @
-    # %23 is #
-    # %3A is :
-    #query_string = "q=from%3A" + user.screen_name + "%20since%3A" + startDate + "%20until%3A" + endDate
-    #query_string = "q=from%3Acityofmentor%20since%3A2017-01-01%20until%3A2017-05-16"
-    #user.tweets = api.GetSearch(raw_query=query_string)    
-
-    user.tweets = getTweets(screen_name, startDateString, endDateString)
+    user.tweets = getTweets(user, startDateString, endDateString)
     user.tweets.sort(key = lambda x: x.created_at_date, reverse=True)
     usersLoaded.append(user)
 
