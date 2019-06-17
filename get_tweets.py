@@ -2,6 +2,7 @@ import twitter
 import load_passwords
 import load_settings
 import csv
+import time
 import os.path
 import sys
 import pytz
@@ -35,6 +36,8 @@ start = parseDate(startDateString)
 apiDateFormat = "%Y-%m-%d"
 twitterDateFormat = "%a %b %d %H:%M:%S %z %Y"
 
+tweetsPerRequest=500 # standard API is 100, premium is 500
+
 hashtags = [
     '#ibiza',
     '#ibizagate',
@@ -58,22 +61,24 @@ hashtags = [
     '#Misstrauensvotum',
 ]
 
-def write_tweets_for_tag(tag):
-    search_query = 'q=' + hash_tag
-    search_query = search_query.replace('#', '%23') 
-    search_query += '&result_type=recent'
-    search_query += '&since=' + startDateString
-    search_query += '&count=100'
 
-    tweets = get_all_for_query(search_query)
-    return tweets
+
+# def write_tweets_for_tag(tag):
+#     search_query = 'q=' + hash_tag
+#     search_query = search_query.replace('#', '%23') 
+#     search_query += '&result_type=recent'
+#     search_query += '&since=' + startDateString
+#     search_query += '&count=' + tweetsPerRequest 
+
+#     tweets = get_all_for_query(search_query)
+#     return tweets
 
 def write_all_for_query(query):
     earliestTweet = None
-    max_id = None
+    max_id = 1136971040280731648
 
     while(True):
-        raw_query = query + '&count=100'
+        raw_query = query + '&count=' + tweetsPerRequest
         if max_id is not None:
             raw_query += '&max_id=' + str(max_id)
         newTweets = api.GetSearch(raw_query=raw_query)
@@ -89,6 +94,8 @@ def write_all_for_query(query):
 
         if earliestTweetDate < start or len(newTweets) == 1:
             return
+        
+        time.sleep(1)
 
 
 def write_tweets_any_hashtag():
@@ -121,3 +128,4 @@ if os.path.exists(tweetsOutputFileName):
 
 write_tweets_any_hashtag()
 
+print("Done!")
